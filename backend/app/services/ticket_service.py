@@ -71,6 +71,10 @@ class TicketService:
         ticket_id: str,
         status: Optional[str] = None,
         resolution: Optional[str] = None,
+        priority: Optional[str] = None,
+        assigned_team: Optional[str] = None,
+        is_active: Optional[bool] = None,
+        description: Optional[str] = None,
         append_description: Optional[str] = None
     ) -> Optional[Ticket]:
         """Update an existing ticket."""
@@ -81,8 +85,16 @@ class TicketService:
             ticket.status = status
             if "Resolved" in status or "closed" in status.lower() or "Rejected" in status:
                 ticket.is_active = False
+        if is_active is not None:
+            ticket.is_active = is_active
+        if priority is not None:
+            ticket.priority = priority
+        if assigned_team is not None:
+            ticket.assigned_team = assigned_team
         if resolution is not None:
             ticket.resolution = resolution
+        if description is not None:
+            ticket.description = description
         if append_description is not None:
             ticket.description = f"{ticket.description or ''}\n\n[Update {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%SZ')}]: {append_description}"
         ticket.updated_at = datetime.now(timezone.utc)
@@ -95,7 +107,7 @@ class TicketService:
         db: Session,
         employee: str,
         category: Optional[str] = None,
-        keywords: Optional[List[str]] = None
+        keywords: Optional[List[Optional[str]]] = None
     ) -> Optional[Ticket]:
         """
         Check if a relevant active ticket already exists for the employee to prevent duplicate creation.
@@ -123,7 +135,7 @@ class TicketService:
                 summary_lower = (t.issue_summary or "").lower()
                 desc_lower = (t.description or "").lower()
                 for kw in keywords:
-                    if kw.lower() in summary_lower or kw.lower() in desc_lower:
+                    if kw and isinstance(kw, str) and (kw.lower() in summary_lower or kw.lower() in desc_lower):
                         return t
 
         return None

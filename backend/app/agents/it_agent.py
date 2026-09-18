@@ -35,15 +35,24 @@ class ITServiceAgent:
         # 1. Manage Conversation Session
         conv_id = request.conversation_id or str(uuid.uuid4())
         conversation = self.db.query(Conversation).filter(Conversation.id == conv_id).first()
+        is_continuing_clarification = False
+        prior_context = {}
+
         if not conversation:
             conversation = Conversation(
                 id=conv_id,
                 employee_name=employee_name,
                 employee_email=employee_email,
-                current_state="INITIAL"
+                current_state="INITIAL",
+                context_data={}
             )
             self.db.add(conversation)
             self.db.commit()
+        else:
+            # Check if we are resuming an active clarification
+            if conversation.current_state == "CLARIFYING" and conversation.active_intent:
+                is_continuing_clarification = True
+                prior_context = conversation.context_data or {}
 
         # Log incoming employee message
         user_msg = ConversationMessage(
@@ -54,24 +63,112 @@ class ITServiceAgent:
         self.db.add(user_msg)
         self.db.commit()
 
-        # 2. Intent Detection & Classification
-        intent, category = IntentDetector.detect_intent(message_text)
+        # 2. Intent Detection & Classification with Conversation Memory
+        detected_intent, detected_category = IntentDetector.detect_intent(message_text)
 
-        # 3. Entity Extraction
-        entities = EntityExtractor.extract_entities(message_text, context=request.context)
+        if is_continuing_clarification:
+            # If the user is responding to a pending question, preserve the active intent
+            if detected_intent in ["unknown_it_issue", "general_inquiry"] or not detected_intent:
+                intent = conversation.active_intent
+                category = conversation.active_category or detected_category
+            else:
+                intent = detected_intent
+                category = detected_category
+        else:
+            intent = detected_intent
+            category = detected_category
+
+        # 3. Entity Extraction with Prior Context Synthesis
+        extraction_context = {
+            **prior_context,
+            **(request.context or {}),
+            "pending_question": conversation.pending_question,
+            "active_intent": intent
+        }
+        new_entities = EntityExtractor.extract_entities(message_text, context=extraction_context)
+        
+        # Merge accumulated entities across conversation turns
+        entities = {**prior_context}
+        for k, v in new_entities.items():
+            if v is not None:
+                entities[k] = v
 
         # 4. Grounded Policy Retrieval
-        retrieval_resp = self.retriever.search(query=message_text, top_k=3)
+        # Search using both original issue and any clarifying details
+        search_query = message_text
+        if is_continuing_clarification and conversation.pending_question:
+            search_query = f"{conversation.active_intent.replace('_', ' ')} {message_text}"
+        retrieval_resp = self.retriever.search(query=search_query, top_k=3)
         retrieved_policies = retrieval_resp.results
 
         # 5. Ticket History Lookup & Duplicate Ticket Prevention
-        # Check if an active ticket already exists for this employee in this category/intent
         active_related_ticket = TicketService.find_related_ticket(
             self.db,
             employee=employee_name,
             category=category,
             keywords=[intent, entities.get("software_name"), "laptop", "printer", "vpn"]
         )
+
+        # If the user is asking about an existing open ticket, reference or update it directly
+        is_ticket_status_inquiry = any(w in message_text.lower() for w in ["update", "status", "waiting", "ticket", "follow up", "following up", "when will"])
+        if active_related_ticket and is_ticket_status_inquiry:
+            ticket_id = active_related_ticket.ticket_id
+            updated_ticket = TicketService.update_ticket(
+                self.db,
+                ticket_id=ticket_id,
+                append_description=f"Employee inquiry: {message_text}"
+            )
+            reply_text = (
+                f"Notice: You already have an active ticket on file: {ticket_id} ({active_related_ticket.status}). "
+                f"Assigned Team: {active_related_ticket.assigned_team or 'IT Operations'}. "
+                f"Issue: {active_related_ticket.issue_summary}. "
+                f"To avoid duplicate tickets, your update has been appended to the existing ticket."
+            )
+            ticket_details = TicketDetailsSchema(
+                ticket_id=ticket_id,
+                status=updated_ticket.status if updated_ticket else active_related_ticket.status,
+                priority=active_related_ticket.priority,
+                assigned_team=active_related_ticket.assigned_team,
+                issue_summary=active_related_ticket.issue_summary
+            )
+            citations = self._build_citations(active_related_ticket.source_policy_ids or [r.policy_id for r in retrieved_policies[:1]])
+            
+            audit_id = self._record_audit(
+                action="TICKET_UPDATED_PREVENT_DUPLICATE",
+                conversation_id=conv_id,
+                decision="UPDATE_TICKET",
+                reason=f"Active ticket {ticket_id} referenced to prevent duplicate creation.",
+                policy_refs=[c.policy_id for c in citations],
+                ticket_id=ticket_id,
+                metadata={
+                    "employee_name": employee_name,
+                    "employee_email": employee_email,
+                    "raw_message": message_text,
+                    "existing_ticket_id": ticket_id
+                }
+            )
+
+            # Store Agent Message
+            agent_msg = ConversationMessage(
+                conversation_id=conv_id,
+                sender_type="AGENT",
+                content=reply_text
+            )
+            self.db.add(agent_msg)
+            self.db.commit()
+
+            return AgentChatResponse(
+                conversation_id=conv_id,
+                intent=intent,
+                category=category,
+                action="update_ticket",
+                status=f"Referenced Active Ticket {ticket_id}",
+                message=reply_text,
+                ticket_id=ticket_id,
+                ticket_details=ticket_details,
+                sources=citations,
+                audit_event_id=audit_id
+            )
 
         # 6. Sufficiency Check
         is_sufficient, follow_ups, sufficiency_reason = SufficiencyChecker.check_sufficiency(
@@ -80,12 +177,16 @@ class ITServiceAgent:
             raw_text=message_text
         )
 
-        # If information is insufficient, formulate targeted follow-up (Action: ASK)
+        # If information is still insufficient, formulate targeted follow-up (Action: ASK)
         if not is_sufficient:
             conversation.current_state = "CLARIFYING"
+            conversation.active_intent = intent
+            conversation.active_category = category
+            conversation.pending_question = follow_ups[0] if follow_ups else None
+            conversation.context_data = entities
             self.db.commit()
 
-            # Prepare citations from any matched policies
+            # Prepare citations from matched policies
             citations = self._build_citations([r.policy_id for r in retrieved_policies[:1]])
 
             # Audit event for follow-up asked
@@ -101,7 +202,8 @@ class ITServiceAgent:
                     "raw_message": message_text,
                     "intent": intent,
                     "follow_up_questions": follow_ups,
-                    "extracted_entities": entities
+                    "extracted_entities": entities,
+                    "is_multi_turn": is_continuing_clarification
                 }
             )
 
@@ -235,7 +337,30 @@ class ITServiceAgent:
             sender_type="AGENT",
             content=final_message
         )
-        self.db.add(agent_msg)
+        # Update Conversation State based on evaluation action
+        if eval_result.action == "ASK":
+            conversation.current_state = "CLARIFYING"
+            conversation.active_intent = intent
+            conversation.active_category = category
+            conversation.pending_question = eval_result.follow_up_questions[0] if eval_result.follow_up_questions else None
+            conversation.context_data = entities
+        elif eval_result.action == "RESOLVE":
+            conversation.current_state = "RESOLVED"
+            conversation.pending_question = None
+            conversation.context_data = entities
+        elif eval_result.action == "ESCALATE":
+            conversation.current_state = "ESCALATED"
+            conversation.pending_question = None
+            conversation.context_data = entities
+        elif eval_result.action == "REJECT":
+            conversation.current_state = "REJECTED"
+            conversation.pending_question = None
+            conversation.context_data = entities
+        else:
+            conversation.current_state = "IN_PROGRESS"
+            conversation.pending_question = None
+            conversation.context_data = entities
+
         self.db.commit()
 
         return AgentChatResponse(
@@ -297,7 +422,8 @@ class ITServiceAgent:
             return RulesEngine.evaluate_expense_tool(
                 is_login_issue=True,
                 is_admin_request=False,
-                has_justification=False
+                has_justification=False,
+                account_exists=entities.get("expense_account_exists")
             )
 
         elif intent == "admin_access":
