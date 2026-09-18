@@ -126,16 +126,37 @@ cd frontend
 npm run build
 ```
 
+## 5. Free Deployment
+
+### Render (backend + frontend)
+
+This repository includes [`render.yaml`](render.yaml) for a free Render web service. Create a new Blueprint from the GitHub repository. Render installs the backend dependencies, builds the Vite frontend, and serves both from one FastAPI service.
+
+- Start command: `cd backend && uvicorn app.main:app --host 0.0.0.0 --port $PORT`
+- Health check: `https://<your-render-service>.onrender.com/health`
+
+The free service uses SQLite on its local filesystem, so runtime-created tickets and audit events reset when the service is redeployed or restarted. The built-in fixtures are reseeded automatically.
+
+### Vercel (optional separate frontend)
+
+Import the repository into Vercel. The included [`vercel.json`](vercel.json) builds `frontend/` and configures SPA routing. Add this environment variable in the Vercel project before deploying:
+
+```text
+VITE_API_BASE_URL=https://<your-render-service>.onrender.com
+```
+
+The Render URL must not include a trailing slash. Render can serve the frontend directly, so Vercel is optional.
+
 ---
 
-## 5. Temporal Simulation Context
+## 6. Temporal Simulation Context
 - **Simulation Week**: Monday, 21 September 2026 – Friday, 25 September 2026.
 - **Reference Date**: `2026-09-21T09:00:00Z`.
 - All credential expirations (90 days) and hardware age calculations (e.g. Aditi Sharma's 3.5-year-old laptop) evaluate against this horizon.
 
 ---
 
-## 6. Authoritative Ground Truth Data
+## 7. Authoritative Ground Truth Data
 
 ### Policies (KB-01 through KB-10 + Asset Policy)
 - **KB-01**: Password Reset (Self-service portal; manual unlock if > 5 failed attempts).
@@ -161,5 +182,5 @@ The frontend includes one-click loading for all 15 scenarios from Section 2 of t
 
 ---
 
-## 7. 15-Minute Evaluation Guide
+## 8. 15-Minute Evaluation Guide
 Follow [`docs/DEMO_SCRIPT.md`](docs/DEMO_SCRIPT.md) for a structured 6-act demonstration covering ground truth adherence, deflection, security emergency containment, multi-policy harmonization, ambiguity resolution, and audit logs.

@@ -55,12 +55,37 @@ def health_check():
         "active_provider": settings.LLM_PROVIDER
     }
 
-@app.get("/", tags=["System"])
-def root():
-    """Root endpoint providing quick navigation links."""
-    return {
-        "message": "Welcome to AIONOS ResolveIT API",
-        "health_check": "/health",
-        "system_info": "/api/info",
-        "documentation": "/docs"
-    }
+from pathlib import Path
+from fastapi import HTTPException
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
+
+# Static frontend serving when compiled (enables 100% free single-service Render deployment)
+FRONTEND_DIST = Path(__file__).resolve().parent.parent.parent / "frontend" / "dist"
+if not FRONTEND_DIST.exists():
+    FRONTEND_DIST = Path(__file__).resolve().parent.parent / "frontend" / "dist"
+
+if FRONTEND_DIST.exists() and (FRONTEND_DIST / "index.html").exists():
+    assets_dir = FRONTEND_DIST / "assets"
+    if assets_dir.exists():
+        app.mount("/assets", StaticFiles(directory=str(assets_dir)), name="static_assets")
+
+    @app.get("/{full_path:path}", include_in_schema=False)
+    async def serve_frontend_spa(full_path: str):
+        if full_path.startswith("api") or full_path in ["health", "docs", "redoc", "openapi.json"]:
+            raise HTTPException(status_code=404, detail="Resource not found")
+        file_path = FRONTEND_DIST / full_path
+        if full_path and file_path.is_file():
+            return FileResponse(str(file_path))
+        return FileResponse(str(FRONTEND_DIST / "index.html"))
+else:
+    @app.get("/", tags=["System"])
+    def root():
+        """Root endpoint providing quick navigation links."""
+        return {
+            "message": "Welcome to AIONOS ResolveIT API",
+            "health_check": "/health",
+            "system_info": "/api/info",
+            "documentation": "/docs"
+        }
+
