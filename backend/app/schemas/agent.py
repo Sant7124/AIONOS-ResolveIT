@@ -33,3 +33,16 @@ class AgentChatResponse(BaseModel):
     escalation_team: Optional[str] = None
     sources: List[SourceCitationSchema] = []
     audit_event_id: str
+
+class AgentStatusResponse(BaseModel):
+    operational: bool = Field(..., description="Overall system operational status")
+    status: str = Field(..., description="Status summary: Operational, Degraded, or Offline")
+    ai_provider_connected: bool = Field(..., description="Whether the AI inference provider is reachable")
+    ai_provider_name: str = Field(..., description="Active configured AI provider")
+    knowledge_base_loaded: bool = Field(..., description="Whether grounded policies KB-01 through KB-10 and ASSET-01 are loaded")
+    knowledge_base_policy_count: int = Field(..., description="Count of loaded corporate policies")
+    database_connected: bool = Field(..., description="Whether the relational database engine is connected")
+    active_tickets_count: int = Field(..., description="Number of currently active tickets")
+    simulation_date: str = Field(..., description="Anchored simulation date")
+    details: Dict[str, Any] = Field(default_factory=dict, description="Additional subsystem diagnostics")
+

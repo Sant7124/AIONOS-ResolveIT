@@ -1,6 +1,7 @@
 """Pydantic schemas package."""
 from app.schemas.policy import PolicyBaseSchema, PolicyResponseSchema, SourceReferenceSchema
-from app.schemas.ticket import TicketBaseSchema, TicketCreateSchema, TicketResponseSchema
+from app.schemas.ticket import TicketBaseSchema, TicketCreateSchema, TicketResponseSchema, TicketUpdateSchema
+from app.schemas.request import EmployeeRequestCreateSchema, EmployeeRequestResponseSchema
 from app.schemas.audit import AuditEventCreateSchema, AuditEventResponseSchema
 from app.schemas.retrieval import (
     RetrievalQuerySchema, 
@@ -12,7 +13,8 @@ from app.schemas.agent import (
     AgentChatRequest,
     AgentChatResponse,
     SourceCitationSchema,
-    TicketDetailsSchema
+    TicketDetailsSchema,
+    AgentStatusResponse
 )
 
 __all__ = [
@@ -22,6 +24,9 @@ __all__ = [
     "TicketBaseSchema",
     "TicketCreateSchema",
     "TicketResponseSchema",
+    "TicketUpdateSchema",
+    "EmployeeRequestCreateSchema",
+    "EmployeeRequestResponseSchema",
     "AuditEventCreateSchema",
     "AuditEventResponseSchema",
     "RetrievalQuerySchema",
@@ -32,4 +37,5 @@ __all__ = [
     "AgentChatResponse",
     "SourceCitationSchema",
     "TicketDetailsSchema",
+    "AgentStatusResponse",
 ]

@@ -33,3 +33,13 @@ class TicketCreateSchema(BaseModel):
 class TicketResponseSchema(TicketBaseSchema):
     created_at: datetime
     updated_at: datetime
+
+class TicketUpdateSchema(BaseModel):
+    status: Optional[str] = None
+    priority: Optional[str] = None
+    assigned_team: Optional[str] = None
+    resolution: Optional[str] = None
+    is_active: Optional[bool] = None
+    description: Optional[str] = None
+    append_notes: Optional[str] = None
+
