@@ -354,7 +354,12 @@ class RulesEngine:
         )
 
     @staticmethod
-    def evaluate_expense_tool(is_login_issue: bool, is_admin_request: bool, has_justification: bool) -> PolicyEvaluationResult:
+    def evaluate_expense_tool(
+        is_login_issue: bool, 
+        is_admin_request: bool, 
+        has_justification: bool,
+        account_exists: Optional[bool] = None
+    ) -> PolicyEvaluationResult:
         """KB-08: Expense Software Access & TK-1050 Precedent.
         Access is granted by Finance, not IT. IT can only assist with login/technical issues once an account already exists.
         Admin access without business justification must be rejected per TK-1050.
@@ -382,17 +387,42 @@ class RulesEngine:
                     priority="P2 - High"
                 )
         elif is_login_issue:
-            return PolicyEvaluationResult(
-                action="ASK",
-                status="Waiting on employee verification",
-                message=(
-                    "Per Policy KB-08 (Expense Software Access), access to the expense management tool is granted by Finance, not IT. "
-                    "IT can only assist with login/technical issues once an account already exists. "
-                    "Has your account already been provisioned by the Finance team, or is this a brand-new access request?"
-                ),
-                policy_ids=["KB-08"],
-                follow_up_questions=["Was an expense tool account previously created for you by Finance?"]
-            )
+            if account_exists is True:
+                return PolicyEvaluationResult(
+                    action="CREATE_TICKET",
+                    status="In progress — IT login assistance queued",
+                    message=(
+                        "Per Policy KB-08 (Expense Software Access), since your expense management account already exists, "
+                        "IT can assist with your credential and authentication problem. A ticket has been created for IT Helpdesk login assistance."
+                    ),
+                    policy_ids=["KB-08"],
+                    priority="P3 - Medium",
+                    assigned_team="IT Helpdesk",
+                    ticket_summary="Expense software invalid credentials assistance",
+                    ticket_description="Technical authentication assistance for verified existing expense account."
+                )
+            elif account_exists is False:
+                return PolicyEvaluationResult(
+                    action="RESOLVE",
+                    status="Referred to Finance Administration",
+                    message=(
+                        "Per Policy KB-08 (Expense Software Access), new account creation is managed strictly by Finance, not IT. "
+                        "Please submit a new account request through the Finance Expense Portal for provisioning."
+                    ),
+                    policy_ids=["KB-08"]
+                )
+            else:
+                return PolicyEvaluationResult(
+                    action="ASK",
+                    status="Waiting on employee verification",
+                    message=(
+                        "Per Policy KB-08 (Expense Software Access), access to the expense management tool is granted by Finance, not IT. "
+                        "IT can only assist with login/technical issues once an account already exists. "
+                        "Has your account already been provisioned by the Finance team, or is this a brand-new access request?"
+                    ),
+                    policy_ids=["KB-08"],
+                    follow_up_questions=["Was an expense tool account previously created for you by Finance?"]
+                )
         else:
             return PolicyEvaluationResult(
                 action="ESCALATE",
@@ -411,19 +441,22 @@ class RulesEngine:
         Any suspected phishing email, malware, or unauthorized access attempt must be reported to security@veridian-corp.example immediately
         and should not be forwarded to other employees.
         """
-        warning_prefix = ""
         if was_forwarded:
-            warning_prefix = (
+            warning_text = (
                 "CRITICAL SECURITY WARNING: Per Policy KB-09 (Security Incident Reporting), suspected phishing emails "
                 "MUST NOT be forwarded to other employees! Please urgently alert the teammates who received the email "
                 "NOT to click any links or download attachments. "
+            )
+        else:
+            warning_text = (
+                "CRITICAL CAUTION: Per Policy KB-09 (Security Incident Reporting), do NOT forward this email to colleagues or coworkers under any circumstances! "
             )
 
         return PolicyEvaluationResult(
             action="ESCALATE",
             status="Escalated to Security — under investigation (active)",
             message=(
-                f"{warning_prefix}Any suspected phishing email or unauthorized access attempt must be reported immediately "
+                f"{warning_text}Any suspected phishing email or unauthorized access attempt must be reported immediately "
                 "to security@veridian-corp.example as an attachment with complete email headers. "
                 "A Priority 1 (P1) Critical Security Ticket has been created and escalated to the Information Security (SOC) team."
             ),

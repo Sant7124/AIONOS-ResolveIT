@@ -20,10 +20,26 @@ class EntityExtractor:
         age_match = re.search(r"(\d+(?:\.\d+)?)\s*(?:years?|yrs?)(?:\s*old)?", lower)
         if age_match:
             entities["device_age_years"] = float(age_match.group(1))
+        elif context and (context.get("asking_age") or "age" in str(context.get("pending_question") or "").lower() or context.get("active_intent") in ["laptop_replacement", "hardware_issue"]):
+            bare_num = re.search(r"\b(\d+(?:\.\d+)?)\b", lower)
+            if bare_num:
+                entities["device_age_years"] = float(bare_num.group(1))
+
 
         # 3. Hardware state
-        entities["is_dead"] = any(w in lower for w in ["won't turn on", "wont turn on", "completely dead", "doesn't turn on", "dead"])
-        entities["is_screen_flickering"] = "flickering" in lower or "flicker" in lower
+        if any(w in lower for w in ["won't turn on", "wont turn on", "completely dead", "doesn't turn on", "dead"]):
+            entities["is_dead"] = True
+        elif context and context.get("is_dead"):
+            entities["is_dead"] = True
+        else:
+            entities["is_dead"] = False
+
+        if "flickering" in lower or "flicker" in lower:
+            entities["is_screen_flickering"] = True
+        elif context and context.get("is_screen_flickering"):
+            entities["is_screen_flickering"] = True
+        else:
+            entities["is_screen_flickering"] = False
 
         # 4. Contractor status
         entities["is_contractor"] = "contractor" in lower

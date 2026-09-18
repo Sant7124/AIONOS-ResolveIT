@@ -24,13 +24,21 @@ class SufficiencyChecker:
 
         # 2. Hardware / Laptop issue without age or symptom
         if intent in ["laptop_replacement", "hardware_issue"]:
-            has_symptom = entities.get("is_dead") or entities.get("is_screen_flickering") or "broken" in lower or "won't turn on" in lower or "flickering" in lower
+            has_symptom = entities.get("is_dead") or entities.get("is_screen_flickering") or "broken" in lower or "won't turn on" in lower or "flicker" in lower
             has_age = entities.get("device_age_years") is not None
-            if not has_symptom and not has_age:
+            if has_symptom and not has_age:
+                return False, [
+                    "How old is the laptop?"
+                ], "Laptop service policy (KB-03 and Asset Management) requires the device age to evaluate repair versus lifecycle replacement eligibility."
+            elif not has_symptom and not has_age:
                 return False, [
                     "What specific problem are you experiencing with your laptop (e.g., won't turn on, physical damage, display flickering)?",
-                    "Approximately how old is the laptop (in years)?"
+                    "How old is the laptop?"
                 ], "Laptop service policy requires device age and verified failure details."
+            elif not has_symptom and has_age:
+                return False, [
+                    "What specific problem or failure are you experiencing with your laptop?"
+                ], "Laptop service policy requires verified hardware failure details."
 
         # 3. Software installation without software name
         if intent == "software_installation":
