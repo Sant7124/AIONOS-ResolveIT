@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime
-from sqlalchemy import Column, String, Text, DateTime, ForeignKey
+from sqlalchemy import Column, String, Text, DateTime, ForeignKey, JSON
 from sqlalchemy.orm import relationship
 from app.database.session import Base
 
@@ -12,6 +12,10 @@ class Conversation(Base):
     employee_name = Column(String(100), nullable=False)
     employee_email = Column(String(150), nullable=False)
     current_state = Column(String(50), default="INITIAL")  # INITIAL, CLARIFYING, RESOLVED, ESCALATED
+    active_intent = Column(String(100), nullable=True)
+    active_category = Column(String(100), nullable=True)
+    pending_question = Column(Text, nullable=True)
+    context_data = Column(JSON, default=dict)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 

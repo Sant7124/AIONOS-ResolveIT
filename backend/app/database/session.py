@@ -24,7 +24,24 @@ def get_db():
         db.close()
 
 def init_db():
-    """Create all database tables registered on Base."""
+    """Create all database tables registered on Base and migrate schema changes safely."""
     # Import all models so that Base.metadata knows about them
     import app.models  # noqa: F401
     Base.metadata.create_all(bind=engine)
+
+    # Safe SQLite column migrations for conversations table
+    with engine.connect() as conn:
+        try:
+            result = conn.exec_driver_sql("PRAGMA table_info(conversations)")
+            existing_cols = {row[1] for row in result.fetchall()}
+            if "active_intent" not in existing_cols:
+                conn.exec_driver_sql("ALTER TABLE conversations ADD COLUMN active_intent VARCHAR(100)")
+            if "active_category" not in existing_cols:
+                conn.exec_driver_sql("ALTER TABLE conversations ADD COLUMN active_category VARCHAR(100)")
+            if "pending_question" not in existing_cols:
+                conn.exec_driver_sql("ALTER TABLE conversations ADD COLUMN pending_question TEXT")
+            if "context_data" not in existing_cols:
+                conn.exec_driver_sql("ALTER TABLE conversations ADD COLUMN context_data JSON DEFAULT '{}'")
+            conn.commit()
+        except Exception:
+            pass
