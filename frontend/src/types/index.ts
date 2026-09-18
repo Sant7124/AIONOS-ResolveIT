@@ -177,3 +177,17 @@ export interface ApiError {
   status?: number;
   canRetry?: boolean;
 }
+
+export interface AgentStatus {
+  operational: boolean;
+  status: string;
+  ai_provider_connected: boolean;
+  ai_provider_name: string;
+  knowledge_base_loaded: boolean;
+  knowledge_base_policy_count: number;
+  database_connected: boolean;
+  active_tickets_count: number;
+  simulation_date: string;
+  details: Record<string, any>;
+}
+

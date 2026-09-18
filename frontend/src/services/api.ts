@@ -137,3 +137,60 @@ export async function fetchAuditEvents(limit = 100): Promise<any[]> {
   }
   return res.json();
 }
+
+export async function fetchAuditEventsForRequest(requestId: string): Promise<any[]> {
+  const res = await fetchWithTimeout(`${API_BASE}/api/audit/${encodeURIComponent(requestId)}`);
+  if (!res.ok) {
+    throw new ApiClientError(`Failed to fetch audit events for request ${requestId}: ${res.status}`, res.status);
+  }
+  return res.json();
+}
+
+export async function fetchAgentStatus(): Promise<any> {
+  const res = await fetchWithTimeout(`${API_BASE}/api/agent/status`, {}, 5000);
+  if (!res.ok) {
+    throw new ApiClientError(`Failed to fetch agent status: ${res.status}`, res.status);
+  }
+  return res.json();
+}
+
+export async function fetchRequestById(id: string): Promise<EmployeeRequest> {
+  const res = await fetchWithTimeout(`${API_BASE}/api/requests/${encodeURIComponent(id)}`);
+  if (!res.ok) {
+    throw new ApiClientError(`Failed to fetch request ${id}: ${res.status}`, res.status);
+  }
+  return res.json();
+}
+
+export async function fetchTicketById(id: string): Promise<Ticket> {
+  const res = await fetchWithTimeout(`${API_BASE}/api/tickets/${encodeURIComponent(id)}`);
+  if (!res.ok) {
+    throw new ApiClientError(`Failed to fetch ticket ${id}: ${res.status}`, res.status);
+  }
+  return res.json();
+}
+
+export async function createTicket(payload: any): Promise<Ticket> {
+  const res = await fetchWithTimeout(`${API_BASE}/api/tickets`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+  if (!res.ok) {
+    throw new ApiClientError(`Failed to create ticket: ${res.status}`, res.status);
+  }
+  return res.json();
+}
+
+export async function updateTicket(id: string, payload: any): Promise<Ticket> {
+  const res = await fetchWithTimeout(`${API_BASE}/api/tickets/${encodeURIComponent(id)}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+  if (!res.ok) {
+    throw new ApiClientError(`Failed to update ticket ${id}: ${res.status}`, res.status);
+  }
+  return res.json();
+}
+
