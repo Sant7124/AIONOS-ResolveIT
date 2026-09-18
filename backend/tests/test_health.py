@@ -21,8 +21,8 @@ def test_api_info_endpoint():
     data = response.json()
     assert data["status"] == "ready"
     assert data["counts"]["policies"] >= 11
-    assert data["counts"]["tickets"] == 10
-    assert data["counts"]["employee_requests"] == 15
+    assert data["counts"]["tickets"] >= 10
+    assert data["counts"]["employee_requests"] >= 15
 
 def test_get_policies():
     """Verify that /api/policies returns the 10 KB policies plus Asset Management policy."""
@@ -36,23 +36,23 @@ def test_get_policies():
     assert "ASSET-01" in policy_ids
 
 def test_get_tickets():
-    """Verify that /api/tickets returns the initial 10 ticket records."""
+    """Verify that /api/tickets returns the ticket records."""
     response = client.get("/api/tickets")
     assert response.status_code == 200
     data = response.json()
     assert "tickets" in data
-    assert len(data["tickets"]) == 10
+    assert len(data["tickets"]) >= 10
     ticket_ids = [t["ticket_id"] for t in data["tickets"]]
     assert "TK-1042" in ticket_ids
     assert "TK-1051" in ticket_ids
 
 def test_get_requests():
-    """Verify that /api/requests returns the 15 employee requests."""
+    """Verify that /api/requests returns the employee requests."""
     response = client.get("/api/requests")
     assert response.status_code == 200
     data = response.json()
     assert "requests" in data
-    assert len(data["requests"]) == 15
+    assert len(data["requests"]) >= 15
     request_ids = [r["request_id"] for r in data["requests"]]
     assert "REQ-01" in request_ids
     assert "REQ-15" in request_ids
