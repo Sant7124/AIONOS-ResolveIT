@@ -1,0 +1,405 @@
+{
+  "company": "Veridian Corp",
+  "temporal_context": {
+    "simulation_window": "Monday, 21 September 2026 – Friday, 25 September 2026",
+    "base_date": "2026-09-21"
+  },
+  "policies": [
+    {
+      "id": "KB-01",
+      "title": "Password Reset",
+      "category": "Authentication",
+      "summary": "Employees can reset password via self-service portal; manual unlock by IT required if locked after 5 failed attempts.",
+      "source_text": "Employees can reset their own password via the self-service portal at any time. If locked out after 5 failed attempts, contact IT to unlock the account manually. No approval required.",
+      "conditions": [
+        "Self-service password reset is permitted at any time",
+        "Account lockout is automatically triggered after 5 failed login attempts",
+        "Locked accounts require manual intervention by IT Helpdesk"
+      ],
+      "required_approvals": [],
+      "allowed_actions": [
+        "Self-service password reset via portal",
+        "Manual account unlock by IT Helpdesk"
+      ],
+      "prohibited_actions": [
+        "Resetting locked account (>5 failed attempts) via self-service portal"
+      ],
+      "escalation_required": false,
+      "resolution_steps": [
+        "Direct user to self-service portal at https://identity.veridian-corp.example/self-service/reset",
+        "If locked out due to >5 failed attempts, dispatch manual unlock request to IT Helpdesk",
+        "Verify identity and confirm account unlock; no managerial approval required"
+      ],
+      "time_constraints": "Immediate self-service; manual IT unlock SLA: 15 minutes",
+      "source_document": "Assignment 2_DataPack_InternalServiceAgent.pdf",
+      "source_page": 1,
+      "issuer": "Veridian IT Operations",
+      "last_updated": "Q3 2026"
+    },
+    {
+      "id": "KB-02",
+      "title": "VPN Access",
+      "category": "Network & Remote Access",
+      "summary": "Automatic VPN for full-time employees; manager approval via form for contractors; 90-day credential renewal.",
+      "source_text": "VPN access is granted automatically to all full-time employees. Contractors require manager approval submitted via the access request form. VPN credentials expire every 90 days and must be renewed by the employee.",
+      "conditions": [
+        "Full-time employees receive automatic VPN access",
+        "Contractors require manager approval submitted via access request form",
+        "VPN credentials expire every 90 days and must be renewed by the employee"
+      ],
+      "required_approvals": [
+        "Manager Approval (Contractors only)"
+      ],
+      "allowed_actions": [
+        "Automatic VPN provisioning for full-time employees",
+        "Employee self-service 90-day credential renewal",
+        "Submission of contractor access request form by manager"
+      ],
+      "prohibited_actions": [
+        "Granting VPN access to contractors without verified manager approval",
+        "Bypassing the 90-day credential expiration requirement"
+      ],
+      "escalation_required": true,
+      "resolution_steps": [
+        "Verify requester employment type (full-time employee vs contractor)",
+        "For full-time employees: confirm identity and guide employee through 90-day credential renewal portal",
+        "For contractors: verify submission of official access request form and confirmation of manager sign-off",
+        "Provision or extend VPN credentials upon verified authorization"
+      ],
+      "time_constraints": "Credentials valid for 90 days; contractor approval turnaround 1-2 business days",
+      "source_document": "Assignment 2_DataPack_InternalServiceAgent.pdf",
+      "source_page": 1,
+      "issuer": "Veridian IT Infrastructure & Security",
+      "last_updated": "Q3 2026"
+    },
+    {
+      "id": "KB-03",
+      "title": "Laptop Replacement",
+      "category": "Hardware",
+      "summary": "Eligible for replacement after 3 years or earlier for verified hardware failure; requires 2 weeks advance notice.",
+      "source_text": "Laptops are eligible for replacement after 3 years of service, or earlier in case of verified hardware failure. Requests must be raised at least 2 weeks in advance of intended replacement.",
+      "conditions": [
+        "Laptop must have reached at least 3 years of service from date of issue",
+        "Early replacement before 3 years requires verified hardware failure confirmed by diagnostic review",
+        "Requests must be submitted at least 2 weeks in advance of intended replacement date",
+        "Interacts with Asset Management Policy (4-year refresh cycle requiring Finance sign-off if < 4 years)"
+      ],
+      "required_approvals": [
+        "IT Technical Approval",
+        "Finance Sign-off (mandatory if < 4 years old per Asset Management Policy)"
+      ],
+      "allowed_actions": [
+        "Hardware replacement request with minimum 2 weeks advance notice",
+        "Hardware diagnostic evaluation for early failure claims",
+        "Hardware repair (without replacement) for devices < 3 years old without fatal hardware failure"
+      ],
+      "prohibited_actions": [
+        "Replacing laptops under 3 years old without verified hardware failure",
+        "Fulfilling laptop replacement with less than 2 weeks advance notice",
+        "Replacing laptops under 4 years old without Finance sign-off in addition to IT approval"
+      ],
+      "escalation_required": true,
+      "resolution_steps": [
+        "Verify laptop issue date and calculate current service age",
+        "If device is under 3 years: dispatch hardware diagnostic to check if repair is possible rather than replacement",
+        "If device is completely inoperable or >= 3 years: confirm 2-week notice window",
+        "If device is between 3 and 4 years: flag for dual IT approval and Finance sign-off per Asset Management Policy",
+        "Queue approved ticket to Hardware Depot for fulfillment"
+      ],
+      "time_constraints": "Requests must be raised at least 2 weeks in advance; 3-year service eligibility",
+      "source_document": "Assignment 2_DataPack_InternalServiceAgent.pdf",
+      "source_page": 1,
+      "issuer": "Veridian IT Support & Hardware Depot",
+      "last_updated": "Q3 2026"
+    },
+    {
+      "id": "KB-04",
+      "title": "Software Installation Requests",
+      "category": "Software & Applications",
+      "summary": "Approved catalog software can be self-installed; non-catalog software requires 3–5 business days IT Security review.",
+      "source_text": "Standard software (listed in the approved catalog) can be self-installed. Non-catalog software requires IT Security review, which takes 3–5 business days.",
+      "conditions": [
+        "Standard software listed in approved company catalog can be self-installed without approval",
+        "Non-catalog software (including third-party tools and browser extensions) requires mandatory IT Security review",
+        "IT Security review takes 3–5 business days"
+      ],
+      "required_approvals": [
+        "IT Security Review (Non-catalog software only)"
+      ],
+      "allowed_actions": [
+        "Self-installation of approved catalog software via corporate software center",
+        "Submission of non-catalog software review request to IT Security"
+      ],
+      "prohibited_actions": [
+        "Self-installation or unauthorized execution of non-catalog software",
+        "Bypassing the 3–5 business day IT Security review process"
+      ],
+      "escalation_required": true,
+      "resolution_steps": [
+        "Cross-reference requested software or extension against approved catalog",
+        "If in catalog: provide direct self-service download and installation instructions",
+        "If not in catalog: create non-catalog software review ticket, collect vendor details and business justification",
+        "Route ticket to IT Security Review queue with 3–5 business days SLA notice"
+      ],
+      "time_constraints": "IT Security review requires 3–5 business days",
+      "source_document": "Assignment 2_DataPack_InternalServiceAgent.pdf",
+      "source_page": 1,
+      "issuer": "Veridian IT Security & Application Governance",
+      "last_updated": "Q3 2026"
+    },
+    {
+      "id": "KB-05",
+      "title": "Printer Troubleshooting",
+      "category": "Peripherals & Printing",
+      "summary": "Check queue and restart print spooler first; if issue persists, log ticket with printer asset tag.",
+      "source_text": "For printer issues, first check the printer queue and restart the print spooler. If the issue persists after restart, log a ticket with the printer’s asset tag.",
+      "conditions": [
+        "User must first inspect printer queue and restart print spooler service",
+        "A ticket can only be logged if issue persists after queue check and spooler restart",
+        "Printer asset tag is a mandatory required field for logging a dispatch ticket"
+      ],
+      "required_approvals": [],
+      "allowed_actions": [
+        "Checking and clearing stuck print queue jobs",
+        "Restarting local Windows print spooler service",
+        "Logging dispatch ticket with validated printer asset tag"
+      ],
+      "prohibited_actions": [
+        "Dispatching floor technician without first attempting print spooler restart",
+        "Logging a printer ticket without an asset tag"
+      ],
+      "escalation_required": false,
+      "resolution_steps": [
+        "Instruct user to verify printer queue and clear any hung or stuck print jobs",
+        "Provide step-by-step guidance to restart the print spooler service",
+        "Ask user to test print after spooler restart",
+        "If problem persists, prompt user for printer asset tag (e.g. VER-PRN-XX-XX)",
+        "Log technician dispatch ticket once asset tag is provided"
+      ],
+      "time_constraints": "Same-day technician triage upon ticket logging with asset tag",
+      "source_document": "Assignment 2_DataPack_InternalServiceAgent.pdf",
+      "source_page": 1,
+      "issuer": "Veridian IT Workplace Services",
+      "last_updated": "Q3 2026"
+    },
+    {
+      "id": "KB-06",
+      "title": "Email Mailbox Quota",
+      "category": "Email & Collaboration",
+      "summary": "Default mailbox quota is 25GB; archive old mail; increases > 25GB require manager approval and are capped at 50GB.",
+      "source_text": "Default mailbox quota is 25GB. Employees nearing quota should archive old mail. Quota increases beyond 25GB require manager approval and are capped at 50GB.",
+      "conditions": [
+        "Default mailbox quota is 25GB for all employees",
+        "Employees reaching quota must archive old emails and empty Deleted Items",
+        "Quota increases beyond 25GB require formal manager approval",
+        "Mailbox quota is strictly capped at 50GB maximum"
+      ],
+      "required_approvals": [
+        "Manager Approval (Mandatory for quota > 25GB)"
+      ],
+      "allowed_actions": [
+        "Archiving old mail to local or cloud archive store",
+        "Requesting quota increase up to 50GB with manager sign-off"
+      ],
+      "prohibited_actions": [
+        "Increasing mailbox quota beyond 50GB hard cap under any circumstances",
+        "Increasing mailbox quota beyond 25GB without written manager approval"
+      ],
+      "escalation_required": true,
+      "resolution_steps": [
+        "Verify current mailbox storage utilization against 25GB threshold",
+        "Provide mail archiving guidelines to free up primary storage",
+        "If storage expansion is necessary, verify requested quota does not exceed 50GB cap",
+        "Obtain manager sign-off before applying quota expansion",
+        "IT Exchange administrator applies quota increase upon manager approval"
+      ],
+      "time_constraints": "Next business day provisioning upon manager sign-off; 50GB hard ceiling",
+      "source_document": "Assignment 2_DataPack_InternalServiceAgent.pdf",
+      "source_page": 1,
+      "issuer": "Veridian Messaging & Collaboration",
+      "last_updated": "Q3 2026"
+    },
+    {
+      "id": "KB-07",
+      "title": "Guest Wi-Fi Access",
+      "category": "Network & Facilities",
+      "summary": "Guest Wi-Fi credentials are valid for 24 hours and generated by any employee at the front-desk kiosk; no ticket required.",
+      "source_text": "Guest Wi-Fi credentials are valid for 24 hours and can be generated by any employee from the front-desk kiosk. No IT ticket required.",
+      "conditions": [
+        "Guest Wi-Fi credentials are valid for exactly 24 hours",
+        "Any Veridian employee can generate guest credentials at front-desk kiosk",
+        "No IT support ticket is required"
+      ],
+      "required_approvals": [],
+      "allowed_actions": [
+        "Self-generation of guest Wi-Fi passes by employees at reception/front-desk kiosk",
+        "Temporary guest access for up to 24 hours"
+      ],
+      "prohibited_actions": [
+        "Creating IT support tickets for guest Wi-Fi passes",
+        "Sharing internal employee Wi-Fi credentials with external visitors"
+      ],
+      "escalation_required": false,
+      "resolution_steps": [
+        "Inform employee that guest Wi-Fi credentials do not require an IT ticket",
+        "Direct employee to front-desk kiosk located in office reception",
+        "Employee enters guest details at kiosk to generate 24-hour access pass",
+        "Mark issue as resolved via self-service guidance"
+      ],
+      "time_constraints": "Credentials valid for 24 hours; instantaneous at kiosk",
+      "source_document": "Assignment 2_DataPack_InternalServiceAgent.pdf",
+      "source_page": 1,
+      "issuer": "Veridian Network Operations & Facilities",
+      "last_updated": "Q3 2026"
+    },
+    {
+      "id": "KB-08",
+      "title": "Expense Software Access",
+      "category": "Enterprise Systems & Finance",
+      "summary": "Access to expense management tool is granted by Finance, not IT; IT only assists with technical/login issues once account exists.",
+      "source_text": "Access to the expense management tool is granted by Finance, not IT. IT can only assist with login/technical issues once an account already exists.",
+      "conditions": [
+        "Account creation and access entitlement are owned and granted by Finance",
+        "IT cannot create, provision, or approve expense tool accounts",
+        "IT can only assist with login, credential, or browser technical issues once an account already exists"
+      ],
+      "required_approvals": [
+        "Finance Department (for account provisioning / entitlement)"
+      ],
+      "allowed_actions": [
+        "Routing new expense tool account requests to Finance team",
+        "Troubleshooting authentication, session, or browser errors for existing verified accounts"
+      ],
+      "prohibited_actions": [
+        "IT provisioning or approving initial expense tool accounts",
+        "Granting privileged administrative access without business justification (see precedent TK-1050)"
+      ],
+      "escalation_required": true,
+      "resolution_steps": [
+        "Clarify whether employee has an existing provisioned account or requires new access",
+        "If new account required: redirect employee to Finance Department authorization portal",
+        "If account already exists: troubleshoot invalid credentials, browser cookies, or password reset",
+        "If admin access requested: require written business justification and formal approval per precedent TK-1050"
+      ],
+      "time_constraints": "Finance provisioning SLA applies; IT login troubleshooting SLA 4 hours",
+      "source_document": "Assignment 2_DataPack_InternalServiceAgent.pdf",
+      "source_page": 1,
+      "issuer": "Veridian Finance & IT Business Applications",
+      "last_updated": "Q3 2026"
+    },
+    {
+      "id": "KB-09",
+      "title": "Security Incident Reporting",
+      "category": "Information Security",
+      "summary": "Report suspected phishing, malware, unauthorized access to security@veridian-corp.example immediately; NEVER forward to other employees.",
+      "source_text": "Any suspected phishing email, malware, or unauthorized access attempt must be reported to security@veridian-corp.example immediately and should not be forwarded to other employees.",
+      "conditions": [
+        "Applies to suspected phishing, malware, ransomware, or unauthorized access attempts",
+        "Must be reported immediately to security@veridian-corp.example",
+        "CRITICAL PROHIBITION: Must NOT be forwarded to other employees under any circumstances"
+      ],
+      "required_approvals": [],
+      "allowed_actions": [
+        "Immediate reporting to security@veridian-corp.example with headers",
+        "Isolating suspected host or quarantining malicious message",
+        "Alerting teammates NOT to click or interact if email was previously forwarded"
+      ],
+      "prohibited_actions": [
+        "Forwarding suspected phishing emails or malware to other employees or distribution lists",
+        "Clicking links or opening attachments in suspicious emails",
+        "Entering corporate credentials on unverified external sites"
+      ],
+      "escalation_required": true,
+      "resolution_steps": [
+        "EMERGENCY CONTAINMENT: Instruct employee immediately to stop forwarding the email",
+        "If already forwarded to colleagues: advise urgent warning to recipients NOT to click or open attachments",
+        "Instruct employee to forward original email as an attachment ONLY to security@veridian-corp.example",
+        "Create Priority 1 (P1) Security Incident Ticket in Infosec queue",
+        "Notify SOC team for immediate domain blocking and email quarantine"
+      ],
+      "time_constraints": "Immediate (Priority 1 Critical incident containment)",
+      "source_document": "Assignment 2_DataPack_InternalServiceAgent.pdf",
+      "source_page": 1,
+      "issuer": "Veridian Information Security (Infosec)",
+      "last_updated": "Q3 2026"
+    },
+    {
+      "id": "KB-10",
+      "title": "Work-From-Home Equipment",
+      "category": "Equipment & Facilities",
+      "summary": "Employees working remotely > 3 days/wk eligible for one-time allowance (chair, monitor); requires manager sign-off and Finance processing; IT only ships post-approval.",
+      "source_text": "Employees working remotely more than 3 days/week are eligible for a one-time home office equipment allowance (chair, monitor). Requires manager sign-off and Finance processing — IT only handles the equipment shipping request once approved.",
+      "conditions": [
+        "Employee must work remotely more than 3 days per week (minimum 4 days remote)",
+        "Benefit is a one-time home office equipment allowance",
+        "Eligible items are chair and monitor",
+        "Requires manager sign-off AND Finance budget processing",
+        "IT role is strictly limited to handling equipment shipping once approvals are completed"
+      ],
+      "required_approvals": [
+        "Manager Sign-off",
+        "Finance Processing & Budget Approval"
+      ],
+      "allowed_actions": [
+        "Submitting home office equipment allowance application for eligible remote employees",
+        "IT dispatching equipment shipping order upon receipt of confirmed Finance processing"
+      ],
+      "prohibited_actions": [
+        "IT shipping home office equipment prior to Manager and Finance approval",
+        "Granting allowance to employees working remote <= 3 days per week",
+        "Claiming allowance multiple times (restricted to one-time benefit)"
+      ],
+      "escalation_required": true,
+      "resolution_steps": [
+        "Verify employee remote work schedule (> 3 days remote per week)",
+        "Confirm employee has not previously utilized one-time home office allowance",
+        "Direct employee to submit request for Manager sign-off",
+        "Route manager-approved request to Finance for accounting and budget processing",
+        "Upon Finance sign-off, create IT Logistics ticket to ship monitor/chair to home address"
+      ],
+      "time_constraints": "Shipping fulfilled within 2 business days after Finance processing sign-off",
+      "source_document": "Assignment 2_DataPack_InternalServiceAgent.pdf",
+      "source_page": 1,
+      "issuer": "Veridian HR, Finance & IT Logistics",
+      "last_updated": "Q3 2026"
+    },
+    {
+      "id": "ASSET-01",
+      "title": "Asset Management Policy (Extract)",
+      "category": "Asset Lifecycle & Governance",
+      "summary": "All company-issued hardware follows standard 4-year refresh cycle; early replacement requires Finance sign-off in addition to IT approval.",
+      "source_text": "All company-issued hardware, including laptops and monitors, follows a standard 4-year refresh cycle from date of issue. Early replacement outside this cycle requires Finance sign-off in addition to IT approval.",
+      "conditions": [
+        "Applies to all company-issued hardware including laptops and monitors",
+        "Standard refresh cycle is 4 years from date of issue",
+        "Early replacement outside 4-year cycle mandates dual sign-off: Finance sign-off AND IT approval",
+        "Interacts with KB-03: Laptops between 3 and 4 years old are eligible under KB-03 but require Finance sign-off under Asset Policy"
+      ],
+      "required_approvals": [
+        "IT Technical Approval",
+        "Finance Sign-off (for all replacements outside 4-year refresh cycle)"
+      ],
+      "allowed_actions": [
+        "Standard lifecycle replacement at >= 4 years from date of issue",
+        "Early replacement with documented dual approval (IT + Finance)"
+      ],
+      "prohibited_actions": [
+        "Replacing company hardware < 4 years old without Finance sign-off",
+        "Bypassing IT asset audit before retirement of existing hardware"
+      ],
+      "escalation_required": true,
+      "resolution_steps": [
+        "Retrieve hardware serial number and original date of issue from asset registry",
+        "Calculate device age against the 4-year standard refresh threshold",
+        "If >= 4 years: schedule routine lifecycle hardware replacement",
+        "If < 4 years: create dual approval ticket requiring IT diagnostic justification and Finance budget sign-off",
+        "Dispatch hardware fulfillment only after dual authorization is recorded"
+      ],
+      "time_constraints": "Standard 4-year refresh lifecycle from date of issue",
+      "source_document": "Assignment 2_DataPack_InternalServiceAgent.pdf",
+      "source_page": 1,
+      "issuer": "Finance & Assets",
+      "last_updated": "Q2 2026"
+    }
+  ]
+}
