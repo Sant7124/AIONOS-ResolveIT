@@ -1,0 +1,69 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --color-bg-darkest: #070b14;
+    --color-bg-base: #0c1222;
+    --color-bg-surface: #121b2f;
+    --color-bg-card: #18243e;
+    --color-border: #223254;
+    --color-accent: #06b6d4;
+  }
+
+  body {
+    background-color: #070b14;
+    color: #e2e8f0;
+    font-family: 'Inter', sans-serif;
+  }
+
+  /* Custom scrollbars for enterprise feel */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #0c1222;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #223254;
+    border-radius: 3px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #334870;
+  }
+}
+
+@layer components {
+  .glass-card {
+    background: rgba(18, 27, 47, 0.7);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(34, 50, 84, 0.8);
+  }
+  
+  .glass-header {
+    background: rgba(12, 18, 34, 0.85);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid rgba(34, 50, 84, 0.6);
+  }
+
+  .accent-glow {
+    box-shadow: 0 0 20px -5px rgba(6, 182, 212, 0.25);
+  }
+
+  .badge-p1 {
+    @apply bg-rose-500/10 text-rose-400 border border-rose-500/30;
+  }
+  .badge-active {
+    @apply bg-amber-500/10 text-amber-300 border border-amber-500/30;
+  }
+  .badge-resolved {
+    @apply bg-emerald-500/10 text-emerald-400 border border-emerald-500/30;
+  }
+  .badge-neutral {
+    @apply bg-slate-500/10 text-slate-300 border border-slate-600/30;
+  }
+}
