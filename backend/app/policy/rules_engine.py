@@ -499,3 +499,130 @@ class RulesEngine:
                 escalation_team="Finance & HR Approvals",
                 priority="P3 - Medium"
             )
+
+    @staticmethod
+    def evaluate_unsupported_mac() -> PolicyEvaluationResult:
+        """Anti-Hallucination: No Mac hardware policy exists in the Data Pack.
+        IT will not invent an unsupported policy. Escalates to Hardware Depot.
+        """
+        return PolicyEvaluationResult(
+            action="ESCALATE",
+            status="Unsupported Hardware — No Mac policy in Data Pack",
+            message=(
+                "Per Veridian Corp IT standards, corporate policies (KB-03 and ASSET-01) cover PC laptop lifecycle and hardware replacement. "
+                "The corporate Knowledge Base contains no policy authorizing Apple MacBooks or macOS hardware. "
+                "IT does not invent unapproved hardware policies. This inquiry has been escalated to Hardware Depot management for formal guidance."
+            ),
+            policy_ids=["ASSET-01"],
+            escalation_team="Hardware Depot Management",
+            priority="P3 - Medium"
+        )
+
+    @staticmethod
+    def evaluate_vpn_duration_inquiry() -> PolicyEvaluationResult:
+        """Anti-Hallucination: KB-02 specifies 90-day credential validity, but NO session duration limit.
+        IT will not invent a continuous connection timeout. Ground strictly in KB-02.
+        """
+        return PolicyEvaluationResult(
+            action="RESOLVE",
+            status="Grounded in KB-02 — No session limit in Data Pack",
+            message=(
+                "Per Policy KB-02 (VPN Access), VPN credentials expire every 90 days and must be renewed by the employee. "
+                "Corporate policy does not specify a maximum continuous session duration or connection time limit. "
+                "IT will not fabricate an ungrounded session limit."
+            ),
+            policy_ids=["KB-02"]
+        )
+
+    @staticmethod
+    def evaluate_admin_approval_governance() -> PolicyEvaluationResult:
+        """Data Pack check: KB-08 and TK-1050 mandate business justification + Finance authorization.
+        Manager approval alone is insufficient.
+        """
+        return PolicyEvaluationResult(
+            action="REJECT",
+            status="Manager approval alone insufficient per KB-08 / TK-1050",
+            message=(
+                "Per Policy KB-08 and precedent TK-1050, managerial approval alone is not sufficient to grant administrative access. "
+                "Administrative access strictly requires documented written business justification and authorization from Finance & Information Security governance. "
+                "IT cannot grant administrative rights without formal governance review."
+            ),
+            policy_ids=["KB-08"],
+            priority="P3 - Medium"
+        )
+
+    @staticmethod
+    def evaluate_printer_sla() -> PolicyEvaluationResult:
+        """Anti-Hallucination: KB-05 specifies troubleshooting and technician dispatch, but NO numeric SLA.
+        IT does not invent non-existent SLAs.
+        """
+        return PolicyEvaluationResult(
+            action="RESOLVE",
+            status="Grounded in KB-05 — No numeric SLA in Data Pack",
+            message=(
+                "Per Policy KB-05 (Printer Troubleshooting), IT resolves printer issues through first-line print spooler restarts, "
+                "and dispatches a floor technician upon receiving the printer asset tag. "
+                "Corporate policy does not define an explicit numeric SLA for printer repairs. IT does not invent non-existent service level agreements."
+            ),
+            policy_ids=["KB-05"]
+        )
+
+    @staticmethod
+    def evaluate_weekend_support() -> PolicyEvaluationResult:
+        """Anti-Hallucination: No weekend support policy exists in the Data Pack.
+        IT will not invent non-existent weekend SLAs. Escalates to On-Call operations.
+        """
+        return PolicyEvaluationResult(
+            action="ESCALATE",
+            status="Out of scope — No weekend support policy in Data Pack",
+            message=(
+                "The Veridian IT Knowledge Base does not contain an after-hours or weekend support policy. "
+                "IT will not invent non-existent weekend SLAs. Critical production outages must be routed directly to the On-Call Emergency Escalation Team."
+            ),
+            policy_ids=[],
+            escalation_team="IT Operations On-Call",
+            priority="P2 - High"
+        )
+
+    @staticmethod
+    def evaluate_prompt_injection(raw_text: str) -> PolicyEvaluationResult:
+        """Red-Team defense: Bound strictly by corporate policy. Rejects prompt injections."""
+        lower = raw_text.lower()
+        if "phishing" in lower or "kb-09" in lower:
+            return PolicyEvaluationResult(
+                action="ESCALATE",
+                status="Adversarial injection intercepted — KB-09 enforced",
+                message=(
+                    "CRITICAL SECURITY WARNING: Directive override rejected. Per Policy KB-09 (Security Incident Reporting), "
+                    "suspected phishing emails MUST NOT be forwarded under any circumstances! Alert colleagues not to click links. "
+                    "Report immediately to security@veridian-corp.example. Priority 1 incident escalated."
+                ),
+                policy_ids=["KB-09"],
+                priority="P1 - Critical",
+                escalation_team="Information Security (Infosec)",
+                is_security_alert=True,
+                ticket_summary="P1 Security Incident: Phishing forward override attempt",
+                ticket_description="Prompt injection attempt trying to bypass KB-09 anti-forwarding protocol."
+            )
+        elif "admin" in lower or "access" in lower:
+            return PolicyEvaluationResult(
+                action="REJECT",
+                status="Adversarial injection intercepted — KB-08 enforced",
+                message=(
+                    "Adversarial prompt injection detected and rejected. Veridian IT Copilot remains strictly bound to corporate policy. "
+                    "Per Policy KB-08 and precedent TK-1050, administrative access cannot be granted without documented written business justification "
+                    "and Finance & Information Security sign-off."
+                ),
+                policy_ids=["KB-08"],
+                priority="P3 - Medium"
+            )
+        else:
+            return PolicyEvaluationResult(
+                action="REJECT",
+                status="Adversarial roleplay override rejected",
+                message=(
+                    "Roleplay and system override instructions are rejected. Veridian IT Copilot operates under strict corporate governance "
+                    "and cannot assume administrative or directorial authority to bypass established IT policies."
+                ),
+                policy_ids=[]
+            )

@@ -48,15 +48,22 @@ class EntityExtractor:
         entities["credentials_expired"] = "expired" in lower
 
         # 6. Software details
-        if "extension" in lower or "browser extension" in lower:
+        if "slack" in lower:
+            entities["software_name"] = "Slack"
+            entities["is_in_catalog"] = True
+        elif any(w in lower for w in ["not in the software catalog", "not in catalog", "non-catalog", "outside the catalog"]):
+            entities["is_in_catalog"] = False
+            entities["software_name"] = "data-analysis tool" if "data-analysis" in lower or "data analysis" in lower else "non-catalog application"
+        elif "extension" in lower or "browser extension" in lower:
             entities["software_name"] = "browser extension for productivity tracking"
             entities["is_in_catalog"] = False
         elif "data-analysis tool" in lower or "data analysis" in lower:
             entities["software_name"] = "data-analysis tool"
             entities["is_in_catalog"] = False
-        elif "not in the software catalog" in lower or "not in catalog" in lower:
-            entities["is_in_catalog"] = False
-            entities["software_name"] = "non-catalog application"
+        elif any(w in lower for w in ["approved software catalog", "standard software", "approved catalog", "in the software catalog", "in the catalog", "catalog software"]):
+            entities["is_in_catalog"] = True
+            entities["software_name"] = "Standard Catalog Software"
+
 
         # 7. Asset Tag (pattern e.g. VER-PRN-XX-XX or similar uppercase alphanumeric with hyphens)
         tag_match = re.search(r"(ver-[a-z0-9\-]+|[a-z]{2,4}-\d{2,4}-\d{2,4})", lower)
@@ -84,8 +91,10 @@ class EntityExtractor:
         quota_match = re.search(r"(\d+)\s*gb", lower)
         if quota_match:
             entities["requested_mailbox_gb"] = int(quota_match.group(1))
-        elif "full" in lower and "mailbox" in lower:
+        elif any(w in lower for w in ["quota increase", "increase my quota", "increase quota", "expand quota"]):
             entities["requested_mailbox_gb"] = 35
+        else:
+            entities["requested_mailbox_gb"] = None
 
         # Merge with context if provided
         if context:

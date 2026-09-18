@@ -186,8 +186,9 @@ class ITServiceAgent:
             conversation.context_data = entities
             self.db.commit()
 
-            # Prepare citations from matched policies
-            citations = self._build_citations([r.policy_id for r in retrieved_policies[:1]])
+            # Prepare citations from matched policies (empty if issue is completely unknown/ambiguous)
+            citations = [] if intent == "unknown_it_issue" else self._build_citations([r.policy_id for r in retrieved_policies[:1]])
+
 
             # Audit event for follow-up asked
             audit_id = self._record_audit(
@@ -419,12 +420,14 @@ class ITServiceAgent:
             return RulesEngine.evaluate_guest_wifi()
 
         elif intent == "expense_tool_access":
+            is_login = any(w in raw_text.lower() for w in ["login", "log in", "log into", "invalid credentials", "password", "credentials"])
             return RulesEngine.evaluate_expense_tool(
-                is_login_issue=True,
+                is_login_issue=is_login,
                 is_admin_request=False,
                 has_justification=False,
                 account_exists=entities.get("expense_account_exists")
             )
+
 
         elif intent == "admin_access":
             return RulesEngine.evaluate_expense_tool(
@@ -445,6 +448,24 @@ class ITServiceAgent:
                 has_manager_signoff=entities.get("has_manager_signoff", False)
             )
 
+        elif intent == "unsupported_mac_policy":
+            return RulesEngine.evaluate_unsupported_mac()
+
+        elif intent == "vpn_duration_inquiry":
+            return RulesEngine.evaluate_vpn_duration_inquiry()
+
+        elif intent == "admin_approval_governance":
+            return RulesEngine.evaluate_admin_approval_governance()
+
+        elif intent == "printer_sla_inquiry":
+            return RulesEngine.evaluate_printer_sla()
+
+        elif intent == "unsupported_weekend_policy":
+            return RulesEngine.evaluate_weekend_support()
+
+        elif intent in ["prompt_injection", "prompt_injection_admin", "prompt_injection_phishing", "prompt_injection_roleplay"]:
+            return RulesEngine.evaluate_prompt_injection(raw_text)
+
         else:
             return PolicyEvaluationResult(
                 action="ASK",
@@ -453,6 +474,7 @@ class ITServiceAgent:
                 policy_ids=[],
                 follow_up_questions=["What specific IT service or device is having an issue?"]
             )
+
 
     def _build_citations(self, policy_ids: List[str]) -> List[SourceCitationSchema]:
         """Look up official policy titles and statements from the database."""
